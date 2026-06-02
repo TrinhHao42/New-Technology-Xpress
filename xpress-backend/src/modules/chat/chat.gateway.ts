@@ -41,9 +41,6 @@ import { ChatGatewayTransportService } from './services/chat-gateway-transport.s
 
 @WebSocketGateway({
   namespace: '/chat',
-  cors: {
-    origin: '*',
-  },
 })
 export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect

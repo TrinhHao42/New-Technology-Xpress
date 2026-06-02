@@ -18,9 +18,6 @@ interface JwtPayload {
 
 @WebSocketGateway({
   namespace: '/auth-sessions',
-  cors: {
-    origin: '*',
-  },
 })
 export class AuthSessionGateway implements OnGatewayConnection {
   @WebSocketServer()

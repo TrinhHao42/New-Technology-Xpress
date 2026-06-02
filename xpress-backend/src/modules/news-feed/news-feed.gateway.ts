@@ -14,9 +14,6 @@ interface JwtPayload {
 
 @WebSocketGateway({
   namespace: '/feed',
-  cors: {
-    origin: '*',
-  },
 })
 export class NewsFeedGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(NewsFeedGateway.name);

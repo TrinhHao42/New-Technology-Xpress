@@ -5,34 +5,29 @@ import { IoAdapter } from '@nestjs/platform-socket.io';
 import { ServerOptions } from 'socket.io';
 import { AppModule } from './app.module';
 
-/** Extra browser origins (comma-separated), e.g. CORS_ORIGINS=https://my-fe.vercel.app */
-function extraCorsOrigins(): string[] {
+/**
+ * Browser origins allowed by REST and Socket.IO.
+ * Supports comma-separated exact origins and regex literals, e.g.
+ * CORS_ORIGINS=http://localhost:3000,/^http:\/\/192\.168\.\d+\.\d+(:\d+)?$/
+ */
+function corsOriginsFromEnv(): (string | RegExp)[] {
   const raw = (process.env.CORS_ORIGINS ?? '').trim();
   if (!raw) return [];
+
   return raw
     .split(',')
     .map((s) => s.trim())
-    .filter((s) => s.length > 0);
+    .filter((s) => s.length > 0)
+    .map((origin) => {
+      const regexMatch = origin.match(/^\/(.+)\/([a-z]*)$/i);
+      if (!regexMatch) return origin;
+
+      const [, pattern, flags] = regexMatch;
+      return new RegExp(pattern, flags);
+    });
 }
 
-const corsOriginList: (string | RegExp)[] = [
-  'http://localhost',
-  'https://localhost',
-  'capacitor://localhost',
-  'http://localhost:3000',
-  'http://localhost:3001',
-  'http://localhost:5173',
-  'http://deploy-frontend-01.s3-website-us-east-1.amazonaws.com',
-  'https://new-technology-xpress-fe.onrender.com',
-  'https://xpress-ten-ashen.vercel.app',
-  'https://xpress-sandy.vercel.app',
-  'https://xpress-s5va.vercel.app',
-  /\.devtunnels\.ms$/,
-  /^http:\/\/10\.0\.2\.2(:\d+)?$/,
-  /^http:\/\/192\.168\.\d+\.\d+(:\d+)?$/,
-  /^http:\/\/172\.\d+\.\d+\.\d+(:\d+)?$/,
-  ...extraCorsOrigins(),
-];
+const corsOriginList = corsOriginsFromEnv();
 
 class SocketIoCorsAdapter extends IoAdapter {
   override createIOServer(port: number, options?: ServerOptions) {
@@ -40,10 +35,10 @@ class SocketIoCorsAdapter extends IoAdapter {
     return super.createIOServer(port, {
       ...options,
       cors: {
+        ...(options?.cors ?? {}),
         origin: corsOriginList,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
         credentials: true,
-        ...(options?.cors ?? {}),
       },
     });
   }

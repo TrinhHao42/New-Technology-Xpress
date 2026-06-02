@@ -34,7 +34,6 @@ interface DeviceSessionSocketData {
 @Injectable()
 @WebSocketGateway({
   namespace: DEVICE_SESSION_NAMESPACE,
-  cors: { origin: '*' },
 })
 export class DeviceSessionGateway
   implements OnGatewayConnection, OnGatewayDisconnect
